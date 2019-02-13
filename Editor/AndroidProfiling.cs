@@ -4,16 +4,48 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 using System.IO;
+using System;
 
 public class AndroidProfiling : EditorWindow
 {
-    [MenuItem("Test/Profiling")]
+    [MenuItem("Window/Analysis/Profiling Tools")]
     public static void ShowWindow()
     {
         var wnd = EditorWindow.GetWindow(typeof(AndroidProfiling)) as AndroidProfiling;
         wnd.minSize = new Vector2(200, 300);
         wnd.Show();
     }
+
+    public struct BuildParam
+    {
+        public string name;
+        public Func<bool> check;
+        public Action fix;
+
+        public BuildParam(string _name, Func<bool> _check, Action _fix)
+        {
+            name = _name;
+            check = _check;
+            fix = _fix;
+        }
+    }
+
+    BuildParam[] buildParams = new BuildParam[] {
+        new BuildParam("Active target - Android", () => { return EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android; }, () => { EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android); } ),
+        new BuildParam("Gradle Export", () => { return EditorUserBuildSettings.exportAsGoogleAndroidProject; }, () => { EditorUserBuildSettings.exportAsGoogleAndroidProject = true; } ),
+        new BuildParam("Minification mode", () => { return EditorUserBuildSettings.androidDebugMinification == AndroidMinification.Proguard; }, () => { EditorUserBuildSettings.androidDebugMinification = AndroidMinification.Proguard; } ),
+        new BuildParam("Development mode", () => { return EditorUserBuildSettings.development == false; }, () => { EditorUserBuildSettings.development = false; } ),
+        new BuildParam("Scripting Backend", () => { return PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android) == ScriptingImplementation.IL2CPP; }, () => { PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP); } ),
+        new BuildParam("Internet permissions", () => { return PlayerSettings.Android.forceInternetPermission; }, () => { PlayerSettings.Android.forceInternetPermission = true; } ),
+        new BuildParam("Force SD Card permissions", () => { return PlayerSettings.Android.forceSDCardPermission; }, () => { PlayerSettings.Android.forceSDCardPermission = true; } ),
+        new BuildParam("Installation location - external", () => { return PlayerSettings.Android.preferredInstallLocation == AndroidPreferredInstallLocation.PreferExternal; }, () => { PlayerSettings.Android.preferredInstallLocation = AndroidPreferredInstallLocation.PreferExternal; } ),
+#if UNITY_2017_4_OR_NEWER
+        new BuildParam("Limit to ARM v7 target", () => { return PlayerSettings.Android.targetArchitectures == AndroidArchitecture.ARMv7; }, () => { PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7; } ),
+#else
+        new BuildParam("Limit to ARM v7 target", () => { return PlayerSettings.Android.targetDevice == AndroidTargetDevice.ARMv7; }, () => { PlayerSettings.Android.targetDevice = AndroidTargetDevice.ARMv7; } ),
+#endif
+        new BuildParam("Stripping level", () => { return PlayerSettings.strippingLevel == StrippingLevel.Disabled; }, () => { PlayerSettings.strippingLevel = StrippingLevel.Disabled; } )
+    };
 
     private void OnGUI()
     {
@@ -22,51 +54,26 @@ public class AndroidProfiling : EditorWindow
 
         GUILayout.Space(3);
 
-        if (GUILayout.Button("Setup"))
+        foreach (var i in buildParams)
         {
-            SetupProject();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(i.name, GUILayout.Width(250));
+            if (i.check())
+                GUILayout.Label("Good");
+            else
+            {
+                if (GUILayout.Button("Fix"))
+                    i.fix();
+            }
+            GUILayout.EndHorizontal();
         }
 
-        if (GUILayout.Button("Check"))
+        GUILayout.Space(3);
+
+        if (GUILayout.Button("Fix All"))
         {
-            Debug.Log(Path.GetFullPath(InternalEditorUtility.GetEditorFolder()));
-            Debug.Log(Path.GetFullPath(InternalEditorUtility.GetAssetsFolder()));
-            Debug.Log(InternalEditorUtility.GetEditorAssemblyPath());
-            Debug.Log(Directory.GetCurrentDirectory());
-            Debug.Log(PlayerSettings.productName);
-//            Debug.Log(InternalEditorUtility.GetEngineAssemblyPath());
-//            Debug.Log(InternalEditorUtility.GetEngineCoreModuleAssemblyPath());
-//            Debug.Log(InternalEditorUtility.unityPreferencesFolder);
-
-            Debug.Log(Path.GetPathRoot(InternalEditorUtility.GetEditorAssemblyPath()));
-            Debug.Log(Path.GetDirectoryName(Path.GetDirectoryName(InternalEditorUtility.GetEditorAssemblyPath())));
+            foreach (var i in buildParams)
+                i.fix();
         }
-    }
-
-    private void SetupProject()
-    {
-        if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android)
-            Debug.LogWarning("Current target isn't Android!");
-
-        // Build Settings
-        EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
-        EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Gradle;
-//        EditorUserBuildSettings.androidBuildType = AndroidBuildType.Development; //?
-        EditorUserBuildSettings.androidDebugMinification = AndroidMinification.Proguard;
-        EditorUserBuildSettings.development = false;
-        //        EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
-
-        // Backend settings
-        PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
-
-        // Android Player settings
-        PlayerSettings.Android.forceInternetPermission = true;
-        PlayerSettings.Android.forceSDCardPermission = true;
-        PlayerSettings.Android.preferredInstallLocation = AndroidPreferredInstallLocation.PreferExternal;
-        //PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7;
-        PlayerSettings.Android.targetDevice = AndroidTargetDevice.ARMv7;
-        PlayerSettings.strippingLevel = StrippingLevel.Disabled;
-
-        AndroidNativeProfilingPostprocessor.enabled = true;
     }
 }
