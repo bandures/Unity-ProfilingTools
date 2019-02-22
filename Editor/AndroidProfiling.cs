@@ -30,21 +30,22 @@ public class AndroidProfiling : EditorWindow
         }
     }
 
-    BuildParam[] buildParams = new BuildParam[] {
-        new BuildParam("Active target - Android", () => { return EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android; }, () => { EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android); } ),
-        new BuildParam("Gradle Export", () => { return EditorUserBuildSettings.exportAsGoogleAndroidProject; }, () => { EditorUserBuildSettings.exportAsGoogleAndroidProject = true; } ),
-        new BuildParam("Minification mode", () => { return EditorUserBuildSettings.androidDebugMinification == AndroidMinification.Proguard; }, () => { EditorUserBuildSettings.androidDebugMinification = AndroidMinification.Proguard; } ),
-        new BuildParam("Development mode", () => { return EditorUserBuildSettings.development == false; }, () => { EditorUserBuildSettings.development = false; } ),
-        new BuildParam("Scripting Backend", () => { return PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android) == ScriptingImplementation.IL2CPP; }, () => { PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP); } ),
-        new BuildParam("Internet permissions", () => { return PlayerSettings.Android.forceInternetPermission; }, () => { PlayerSettings.Android.forceInternetPermission = true; } ),
-        new BuildParam("Force SD Card permissions", () => { return PlayerSettings.Android.forceSDCardPermission; }, () => { PlayerSettings.Android.forceSDCardPermission = true; } ),
-        new BuildParam("Installation location - external", () => { return PlayerSettings.Android.preferredInstallLocation == AndroidPreferredInstallLocation.PreferExternal; }, () => { PlayerSettings.Android.preferredInstallLocation = AndroidPreferredInstallLocation.PreferExternal; } ),
+    readonly BuildParam[] buildParams = new BuildParam[] {
+        new BuildParam("Active target - Android", () => EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android, () => { EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android); } ),
+        new BuildParam("Gradle Export", () => EditorUserBuildSettings.exportAsGoogleAndroidProject, () => { EditorUserBuildSettings.exportAsGoogleAndroidProject = true; } ),
+        new BuildParam("Minification mode", () => EditorUserBuildSettings.androidDebugMinification == AndroidMinification.Proguard, () => { EditorUserBuildSettings.androidDebugMinification = AndroidMinification.Proguard; } ),
+        new BuildParam("Development mode", () => EditorUserBuildSettings.development == false, () => { EditorUserBuildSettings.development = false; } ),
+        new BuildParam("Scripting Backend", () => PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android) == ScriptingImplementation.IL2CPP, () => { PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP); } ),
+        new BuildParam("Internet permissions", () => PlayerSettings.Android.forceInternetPermission, () => { PlayerSettings.Android.forceInternetPermission = true; } ),
+        new BuildParam("Force SD Card permissions", () => PlayerSettings.Android.forceSDCardPermission, () => { PlayerSettings.Android.forceSDCardPermission = true; } ),
+        new BuildParam("Installation location - external", () => PlayerSettings.Android.preferredInstallLocation == AndroidPreferredInstallLocation.PreferExternal, () => { PlayerSettings.Android.preferredInstallLocation = AndroidPreferredInstallLocation.PreferExternal; } ),
 #if UNITY_2017_4_OR_NEWER
-        new BuildParam("Limit to ARM v7 target", () => { return PlayerSettings.Android.targetArchitectures == AndroidArchitecture.ARMv7; }, () => { PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7; } ),
+        new BuildParam("Limit to ARM v7 target", () => PlayerSettings.Android.targetArchitectures == AndroidArchitecture.ARMv7, () => { PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7; } ),
+        new BuildParam("Stripping level", () => PlayerSettings.GetManagedStrippingLevel(BuildTargetGroup.Android) == ManagedStrippingLevel.Disabled, () => { PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Android, ManagedStrippingLevel.Disabled); } )
 #else
         new BuildParam("Limit to ARM v7 target", () => { return PlayerSettings.Android.targetDevice == AndroidTargetDevice.ARMv7; }, () => { PlayerSettings.Android.targetDevice = AndroidTargetDevice.ARMv7; } ),
+        new BuildParam("Stripping level", () => PlayerSettings.strippingLevel == StrippingLevel.Disabled, () => { PlayerSettings.strippingLevel = StrippingLevel.Disabled; } )
 #endif
-        new BuildParam("Stripping level", () => { return PlayerSettings.strippingLevel == StrippingLevel.Disabled; }, () => { PlayerSettings.strippingLevel = StrippingLevel.Disabled; } )
     };
 
     private void OnGUI()
