@@ -32,6 +32,7 @@ public class AndroidNativeProfilingPostprocessor : IPostprocessBuild
             return;
 
         var editorPath = EditorApplication.applicationContentsPath;
+        //var alternativePath = FileUtil.CombinePaths(Directory.GetParent(EditorApplication.applicationPath).ToString(), "PlaybackEngines");
         var projectPath = Directory.GetCurrentDirectory();
         var buildPath = Path.Combine(path, PlayerSettings.productName);
 

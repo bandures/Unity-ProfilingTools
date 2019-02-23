@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System;
+using System.IO;
 
 // Add Gradle project check
 // - doNotStrip should be present in packagingOptions
@@ -47,11 +48,14 @@ public class AndroidProfiling : EditorWindow
         new BuildParam("Internet permissions", () => PlayerSettings.Android.forceInternetPermission, () => { PlayerSettings.Android.forceInternetPermission = true; } ),
         new BuildParam("Force SD Card permissions", () => PlayerSettings.Android.forceSDCardPermission, () => { PlayerSettings.Android.forceSDCardPermission = true; } ),
         new BuildParam("Installation location - external", () => PlayerSettings.Android.preferredInstallLocation == AndroidPreferredInstallLocation.PreferExternal, () => { PlayerSettings.Android.preferredInstallLocation = AndroidPreferredInstallLocation.PreferExternal; } ),
-#if UNITY_2017_4_OR_NEWER
+#if UNITY_2017_3_OR_NEWER
         new BuildParam("Limit to ARM v7 target", () => PlayerSettings.Android.targetArchitectures == AndroidArchitecture.ARMv7, () => { PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7; } ),
-        new BuildParam("Stripping level", () => PlayerSettings.GetManagedStrippingLevel(BuildTargetGroup.Android) == ManagedStrippingLevel.Disabled, () => { PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Android, ManagedStrippingLevel.Disabled); } )
 #else
         new BuildParam("Limit to ARM v7 target", () => { return PlayerSettings.Android.targetDevice == AndroidTargetDevice.ARMv7; }, () => { PlayerSettings.Android.targetDevice = AndroidTargetDevice.ARMv7; } ),
+#endif
+#if UNITY_2018_3_OR_NEWER
+        new BuildParam("Stripping level", () => PlayerSettings.GetManagedStrippingLevel(BuildTargetGroup.Android) == ManagedStrippingLevel.Disabled, () => { PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Android, ManagedStrippingLevel.Disabled); } )
+#else
         new BuildParam("Stripping level", () => PlayerSettings.strippingLevel == StrippingLevel.Disabled, () => { PlayerSettings.strippingLevel = StrippingLevel.Disabled; } )
 #endif
     };
@@ -81,6 +85,10 @@ public class AndroidProfiling : EditorWindow
 
         if (GUILayout.Button("Fix All"))
         {
+            Debug.Log("MacOS " + Path.Combine(Directory.GetParent(EditorApplication.applicationPath).ToString(), "PlaybackEngines"));
+            Debug.Log("Custom Build " + Path.Combine(EditorApplication.applicationPath, "PlaybackEngines"));
+            Debug.Log("Windows " + Path.Combine(EditorApplication.applicationContentsPath, "PlaybackEngines"));
+
             foreach (var i in buildParams)
                 i.fix();
         }
