@@ -1,10 +1,18 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
-using UnityEditorInternal;
-using System.IO;
 using System;
+
+// Add Gradle project check
+// - doNotStrip should be present in packagingOptions
+// Add Android device check:
+// - Version check - adb shell getprop ro.build.version.sdk 
+// - root-ed device
+// - kernel naming access
+// - systrace buffer (?)
+// - adb shell setprop security.perf_harden 0 (https://android-developers.googleblog.com/2016/07/protecting-android-with-more-linux.html)
+// Add SO check
+// - read symbols and scan for UnityLoop or any other signature function name (http://elfsharp.hellsgate.pl/qanda.shtml)
+
 
 public class AndroidProfiling : EditorWindow
 {
