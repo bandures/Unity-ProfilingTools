@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build;
@@ -30,20 +31,35 @@ public class AndroidNativeProfilingPostprocessor : IPostprocessBuild
         if (target != BuildTarget.Android)
             return;
 
-        var editorPath = Path.GetDirectoryName(Path.GetDirectoryName(InternalEditorUtility.GetEditorAssemblyPath()));
-        var projecPath = Directory.GetCurrentDirectory();
+        var editorPath = EditorApplication.applicationContentsPath;
+        var projectPath = Directory.GetCurrentDirectory();
         var buildPath = Path.Combine(path, PlayerSettings.productName);
 
         Debug.LogWarning("Build: post-process your build to include debug '.so' files");
 
         var libIl2cppTarget = Path.Combine(buildPath, "src/main/jniLibs/armeabi-v7a/libil2cpp.so");
-        var libIl2cppSource = Path.Combine(projecPath, "Temp/StagingArea/symbols/armeabi-v7a/libil2cpp.so.debug");
-        //        Debug.Log(libIl2cppSource + " -> " + libIl2cppTarget);
-        FileUtil.ReplaceFile(libIl2cppSource, libIl2cppTarget);
+        var libIl2cppSource = Path.Combine(projectPath, "Temp/StagingArea/symbols/armeabi-v7a/libil2cpp.so.debug");
+        CopyFile(libIl2cppSource, libIl2cppTarget);
 
         var libUnityTarget = Path.Combine(buildPath, "src/main/jniLibs/armeabi-v7a/libunity.so");
         var libUnitySource = Path.Combine(editorPath, "PlaybackEngines/AndroidPlayer/Variations/il2cpp/Development/Libs/armeabi-v7a/libunity.so");
-        //        Debug.Log(libUnitySource + " -> " + libUnityTarget);
-        FileUtil.ReplaceFile(libUnitySource, libUnityTarget);
+        CopyFile(libUnitySource, libUnityTarget);
+    }
+
+    private bool CopyFile(string src, string dst)
+    {
+        //        Debug.Log(src + " -> " + dst);
+        try
+        {
+            //File.Copy(src, dst, true);
+            FileUtil.CopyFileOrDirectory(src, dst);
+        }
+        catch (Exception)
+        {
+            Debug.LogError(string.Format("Failed to copy {0} -> {1}", src, dst));
+            return false;
+        }
+
+        return true;
     }
 }
