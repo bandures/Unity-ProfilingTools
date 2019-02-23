@@ -33,6 +33,8 @@ namespace Unity.Android.Profiling
         {
             if (target != BuildTarget.Android)
                 return;
+            if (EditorPrefs.GetBool(AndroidProfilingWindow.kAndroidDebugInfoPostprocessorKey, false))
+                return;
 
             Debug.Log("Build: post-processing your build for profiling. Disable it for non-profiling builds!");
 

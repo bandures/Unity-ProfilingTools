@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using UnityEditor;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
 
 // Add Gradle project check
 // - doNotStrip should be present in packagingOptions
@@ -16,6 +16,8 @@ namespace Unity.Android.Profiling
 {
     public class AndroidProfilingWindow : EditorWindow
     {
+        public static readonly string kAndroidDebugInfoPostprocessorKey = "AndroidDebugInfoPostprocessorEnabled";
+
         [MenuItem("Window/Analysis/Profiling Tools")]
         public static void ShowWindow()
         {
@@ -66,6 +68,15 @@ namespace Unity.Android.Profiling
         {
             EditorGUILayout.HelpBox("UTools helps you setup your project for profiling on Android with Android Studio.", MessageType.Info);
             EditorGUILayout.Space();
+
+            GUILayout.Space(3);
+
+            var previousColor = GUI.backgroundColor;
+            bool ppStatus = EditorPrefs.GetBool(kAndroidDebugInfoPostprocessorKey, false);
+            GUI.backgroundColor = ppStatus ? Color.red : Color.green;
+            if (GUILayout.Button((ppStatus ? "Disable" : "Enable") + " Android Debug Info postprocessor"))
+                EditorPrefs.SetBool(kAndroidDebugInfoPostprocessorKey, !ppStatus);
+            GUI.backgroundColor = previousColor;
 
             GUILayout.Space(3);
 
