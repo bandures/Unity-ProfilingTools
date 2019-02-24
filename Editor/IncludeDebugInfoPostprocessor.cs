@@ -3,37 +3,43 @@ using System.IO;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build;
+#if UNITY_2018_2_OR_NEWER
 using UnityEditor.Build.Reporting;
+#endif
 
 namespace Unity.Android.Profiling
 {
 #if UNITY_2018_2_OR_NEWER
-    interface IPostprocessBuildBase : IPostprocessBuildWithReport { }
+    public class IncludeDebugInfoPostprocessor : IPostprocessBuildWithReport
 #else
-    interface IPostprocessBuildBase : IPostprocessBuild { }
+    public class IncludeDebugInfoPostprocessor : IPostprocessBuild
 #endif
-
-    public class IncludeDebugInfoPostprocessor : IPostprocessBuildBase
     {
-        public int callbackOrder { get; } = 0;
+        public int callbackOrder
+        {
+            get
+            {
+                return 0;
+            }
+        }
 
-        // Unity 2018.2+
+#if UNITY_2018_2_OR_NEWER
         public void OnPostprocessBuild(BuildReport report)
         {
             PatchBuild(report.summary.platform, report.summary.outputPath);
         }
-
-        // Older Unity
+#else
         public void OnPostprocessBuild(BuildTarget target, string outputPath)
         {
             PatchBuild(target, outputPath);
         }
+#endif
 
         protected void PatchBuild(BuildTarget target, string path)
         {
             if (target != BuildTarget.Android)
                 return;
-            if (EditorPrefs.GetBool(AndroidProfilingWindow.kAndroidDebugInfoPostprocessorKey, false))
+            if (!EditorPrefs.GetBool(AndroidProfilingWindow.kAndroidDebugInfoPostprocessorKey, false))
                 return;
 
             Debug.Log("Build: post-processing your build for profiling. Disable it for non-profiling builds!");

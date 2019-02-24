@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using UnityEditor.Android;
+
+#if UNITY_2019_1_OR_NEWER
 using UnityEngine;
+using UnityEditor.Android;
+#endif
 
 namespace Unity.Android.Profiling
 {

@@ -35,21 +35,21 @@ namespace Unity.Android.Profiling
 
             GetProperty = (string id) =>
             {
-                var table = deviceInfo.GetType().GetProperty("Properties").GetValue(deviceInfo);
+                var table = deviceInfo.GetType().GetProperty("Properties").GetValue(deviceInfo, null);
                 return (string)table.GetType().GetProperty("Item").GetValue(table, new object[] { id });
             };
         }
 
         private T PropertyAccessor<T>(object deviceInfo, string id)
         {
-            return (T)deviceInfo.GetType().GetProperty(id).GetValue(deviceInfo);
+            return (T)deviceInfo.GetType().GetProperty(id).GetValue(deviceInfo, null);
         }
 #endif
 
-        public string Id { get; }
-        public string Model { get; }
-        public List<string> Features { get; }
-        public int GLVersion { get; }
-        public Func<string, string> GetProperty { get; }
+        public readonly string Id;
+        public readonly string Model;
+        public readonly List<string> Features;
+        public readonly int GLVersion;
+        public readonly Func<string, string> GetProperty;
     }
 }
