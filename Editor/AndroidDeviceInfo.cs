@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+
+#if UNITY_2019_1_OR_NEWER
+using UnityEditor.Android;
+#endif
 
 namespace Unity.Android.Profiling
 {
@@ -13,8 +15,6 @@ namespace Unity.Android.Profiling
 
             Id = deviceInfo.Id;
             Model = deviceInfo.Model;
-            Features = deviceInfo.Features;
-            GLVersion = deviceInfo.GLVersion;
 
             GetProperty = (string id) =>
             {
@@ -30,8 +30,6 @@ namespace Unity.Android.Profiling
 
             Id = PropertyAccessor<string>(deviceInfo, "Id");
             Model = PropertyAccessor<string>(deviceInfo, "Model");
-            Features = PropertyAccessor<List<string>>(deviceInfo, "Features");
-            GLVersion = PropertyAccessor<int>(deviceInfo, "GLVersion");
 
             GetProperty = (string id) =>
             {
@@ -48,8 +46,6 @@ namespace Unity.Android.Profiling
 
         public readonly string Id;
         public readonly string Model;
-        public readonly List<string> Features;
-        public readonly int GLVersion;
         public readonly Func<string, string> GetProperty;
     }
 }

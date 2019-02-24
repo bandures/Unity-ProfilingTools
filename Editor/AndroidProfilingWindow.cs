@@ -61,7 +61,7 @@ namespace Unity.Android.Profiling
 #endif
         };
 
-        private ADB m_Adb = new ADB();
+        private AndroidADB m_Adb = new AndroidADB();
         private Dictionary<string, AndroidDeviceInfo> m_Devices = new Dictionary<string, AndroidDeviceInfo>();
 
         private void OnGUI()

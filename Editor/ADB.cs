@@ -3,13 +3,12 @@ using System.Linq;
 using System.Collections.Generic;
 
 #if UNITY_2019_1_OR_NEWER
-using UnityEngine;
 using UnityEditor.Android;
 #endif
 
 namespace Unity.Android.Profiling
 {
-    public class ADB
+    public class AndroidADB
     {
         public List<string> RetrieveConnectDevicesIDs()
         {
@@ -36,11 +35,6 @@ namespace Unity.Android.Profiling
 #if UNITY_2019_1_OR_NEWER
         private ADB m_Adb = null;
 
-        public string IsADBAvailable()
-        {
-            return GetADB().IsADBAvailable();
-        }
-
         public string Run(string[] command, string errorMsg)
         {
             return GetADB().Run(command, errorMsg);
@@ -55,13 +49,6 @@ namespace Unity.Android.Profiling
         }
 #else
         private object m_Adb;
-
-        public bool IsADBAvailable()
-        {
-            var adb = GetADB();
-            System.Reflection.MethodInfo method = adb.GetType().GetMethod("IsADBAvailable", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            return (bool)method.Invoke(adb, null);
-        }
 
         public string Run(string[] command, string errorMsg)
         {
