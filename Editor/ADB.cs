@@ -29,7 +29,7 @@ namespace Unity.Android.Profiling
 
         public AndroidDeviceInfo RetriveDeviceInfo(string id)
         {
-            return new AndroidDeviceInfo(GetADB(), id);
+            return new AndroidDeviceInfo(this, id);
         }
 
 #if UNITY_2019_1_OR_NEWER
@@ -40,7 +40,7 @@ namespace Unity.Android.Profiling
             return GetADB().Run(command, errorMsg);
         }
 
-        private ADB GetADB()
+        public ADB GetADB()
         {
             if (m_Adb == null)
                 m_Adb = ADB.GetInstance();
@@ -57,7 +57,7 @@ namespace Unity.Android.Profiling
             return (string)method.Invoke(adb, new object[] { command, null, errorMsg });
         }
 
-        private object GetADB()
+        public object GetADB()
         {
             if (m_Adb == null)
             {

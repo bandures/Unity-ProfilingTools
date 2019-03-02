@@ -40,6 +40,20 @@ namespace Unity.Android.Profiling
             }
         }
 
+        public struct DeviceParam
+        {
+            public string name;
+            public Func<AndroidDeviceInfo, string> value;
+            public Func<AndroidDeviceInfo, string> resolution;
+
+            public DeviceParam(string _name, Func<AndroidDeviceInfo, string> _value, Func<AndroidDeviceInfo, string> _resolution)
+            {
+                name = _name;
+                value = _value;
+                resolution = _resolution;
+            }
+        }
+
         readonly BuildParam[] m_BuildParams = new BuildParam[] {
             new BuildParam("Active target - Android", () => EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android, () => { EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android); } ),
             new BuildParam("Gradle Export", () => EditorUserBuildSettings.exportAsGoogleAndroidProject, () => { EditorUserBuildSettings.exportAsGoogleAndroidProject = true; } ),
@@ -55,10 +69,24 @@ namespace Unity.Android.Profiling
             new BuildParam("Limit to ARM v7 target", () => { return PlayerSettings.Android.targetDevice == AndroidTargetDevice.ARMv7; }, () => { PlayerSettings.Android.targetDevice = AndroidTargetDevice.ARMv7; } ),
 #endif
 #if UNITY_2018_3_OR_NEWER
-            new BuildParam("Stripping level", () => PlayerSettings.GetManagedStrippingLevel(BuildTargetGroup.Android) == ManagedStrippingLevel.Low, () => { PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Android, ManagedStrippingLevel.Low); } )
+            new BuildParam("Stripping level", () => PlayerSettings.GetManagedStrippingLevel(BuildTargetGroup.Android) == ManagedStrippingLevel.Low, () => { PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Android, ManagedStrippingLevel.Low); } ),
 #else
-            new BuildParam("Stripping level", () => PlayerSettings.strippingLevel == StrippingLevel.Disabled, () => { PlayerSettings.strippingLevel = StrippingLevel.Disabled; } )
+            new BuildParam("Stripping level", () => PlayerSettings.strippingLevel == StrippingLevel.Disabled, () => { PlayerSettings.strippingLevel = StrippingLevel.Disabled; } ),
 #endif
+            new BuildParam("Engine code stripping", () => !PlayerSettings.stripEngineCode, () => { PlayerSettings.stripEngineCode = false; } )
+        };
+
+        readonly DeviceParam[] m_DeviceParams = new DeviceParam[] {
+            // Device API Level - 26 is minimum required
+            new DeviceParam("SDK Version", (dev) => dev.GetProperty("ro.build.version.sdk"), (dev) => { return Int32.Parse(dev.GetProperty("ro.build.version.sdk")) >= 26 ? "Good" : "Failed"; } ),
+            // Check that we can execute 'su' command
+            new DeviceParam("Is Rooted", (dev) => dev.IsRooted.ToString(), (dev) => { return dev.IsRooted ? "Good" : ""; } ),
+            // Check '/proc/sys/kernel/perf_event_paranoid' for perf mode
+            new DeviceParam("Perf enabled", (dev) => dev.PerfLevel.ToString(), (dev) => { if (dev.PerfLevel == 3) return "Disabled"; if (dev.PerfLevel == -1) return "Full access"; return "Limited"; } ),
+            // Check property 'security.perf_harden', is access to perf hardened
+            new DeviceParam("Perf access hardened", (dev) => dev.GetProperty("security.perf_harden").ToString(), (dev) => { return Int32.Parse(dev.GetProperty("security.perf_harden")) == 0 ? "Good" : "Failed"; } ),
+            // Check SE Linux default permission mode
+            new DeviceParam("Kernel security policy", (dev) => dev.KernelPolicy, (dev) => { return dev.KernelPolicy.ToLower() == "permissive" ? "Good" : "Failed"; } ),
         };
 
         private AndroidADB m_Adb = new AndroidADB();
@@ -110,18 +138,15 @@ namespace Unity.Android.Profiling
                 GUILayout.Label(i.Value.Model, GUILayout.Width(100));
                 GUILayout.Label(i.Value.Id, GUILayout.Width(250));
                 GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(" - SDK Version", GUILayout.Width(150));
-                GUILayout.Label(i.Value.GetProperty("ro.build.version.sdk"), GUILayout.Width(100));
-                if (Int32.Parse(i.Value.GetProperty("ro.build.version.sdk")) >= 27)
-                    GUILayout.Label("Good");
-                GUILayout.EndHorizontal();
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(" - Perf access blocked", GUILayout.Width(150));
-                GUILayout.Label(i.Value.GetProperty("security.perf_harden"), GUILayout.Width(100));
-                if (Int32.Parse(i.Value.GetProperty("security.perf_harden")) == 0)
-                    GUILayout.Label("Good");
-                GUILayout.EndHorizontal();
+
+                foreach (var par in m_DeviceParams)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(" - " + par.name, GUILayout.Width(150));
+                    GUILayout.Label(par.value(i.Value), GUILayout.Width(100));
+                    GUILayout.Label(par.resolution(i.Value));
+                    GUILayout.EndHorizontal();
+                }
             }
 
             GUILayout.Space(3);
