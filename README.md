@@ -12,4 +12,4 @@ This package enchant built-in integration with additional information:
 * Intel VTune Amplifier - profiler markers
 
 ## Full Documentation
-See included [project manual page](Documentation/com.unity.assetbundlebrowser.md) for additional details.
+See included [project manual page](Documentation/com.unity.profilingtools.md) for additional details.
