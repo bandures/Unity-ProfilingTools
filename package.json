@@ -1,0 +1,16 @@
+{
+  "name": "com.unity.profilingtools",
+  "displayName":  "Unity profiling tools for integration with 3rd party native profilers",
+  "version": "0.1.0",
+  "unity": "2017.4",
+  "description": "Collection of native plugins and project setup wizard for integration with 3rd party native profiling tools",
+  "keywords": [
+    "performance",
+    "unity"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "URL_GOES_HERE",
+    "revision": "REVISION_GOES_HERE"
+  }
+}

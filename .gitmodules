@@ -1,0 +1,3 @@
+[submodule "Native~"]
+	path = Native~
+	url = https://github.com/bandures/Unity-NativeProfiling-Private

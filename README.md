@@ -1,5 +1,4 @@
-# Unity-ProfilingTools
+# Unity-NativeProfiling
 
-Project that helps setup Unity project for profiling on Android platform.
+A collection of packages to profile with different profiling tools
 
-More information in [Google Document - Unity Profiling With - Android Studio](https://docs.google.com/document/d/17WJQZyT4PSSumEZvyvDlpAfC0qZER_vRqmkhrelU6k4/edit?usp=sharing)
