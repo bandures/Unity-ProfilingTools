@@ -29,11 +29,12 @@ namespace Unity.NativeProfiling
             yield return new AndroidDeviceCheckPhase();
 #endif
             yield return new TextWizardPhase("Instructions", 
-                "Open exported Gradle project in Android Studio and start profiler.\nFor Android Studio setup and guides click on _this link_", 
-                "https://docs.google.com/document/d/17WJQZyT4PSSumEZvyvDlpAfC0qZER_vRqmkhrelU6k4/edit?usp=sharing");
+                "Open exported Gradle project in Android Studio and start profiler. " +
+                "For Android Studio setup and guides click on " +
+                "<style=link><link=https://docs.google.com/document/d/17WJQZyT4PSSumEZvyvDlpAfC0qZER_vRqmkhrelU6k4/edit?usp=sharing> this link for online documentation");
         }
 
-        private class BuildPostprocessPhase : WizardPhase
+        class BuildPostprocessPhase : WizardPhase
         {
             public BuildPostprocessPhase() : base("Build post processor")
             {

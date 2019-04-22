@@ -184,3 +184,33 @@
 .disabledButton {
     background-image:resource("btn_red");
 }
+
+
+.rich-text-default, .rich-text-link {
+    margin-top: 0;
+    margin-left: 0;
+    margin-bottom: 0;
+    margin-right: 0;
+
+    padding-top: 0;
+    padding-left: 0;
+    padding-bottom: 0;
+    padding-right: 0;
+}
+
+.rich-text-link {
+    color: #0808FC;
+    text-color: #0808FC;
+    background: rgba(0, 0, 0, 0);
+    background-image: none;
+    padding-top: 0;
+    padding-left: 0;
+    padding-bottom: 0;
+    padding-right: 0;
+    cursor: link;
+}
+
+.rich-text-link:hover {
+    color: #6868FC;
+    text-color: #6868FC;
+}

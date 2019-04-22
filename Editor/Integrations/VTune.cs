@@ -25,11 +25,10 @@ namespace Unity.NativeProfiling
         {
             yield return new ProjectSetupPhase();
             yield return new TextWizardPhase("Instructions",
-                "Open built exe file in VTune Amplifier and start profiler.\nFor VTune setup and guides click on _this link_",
-                "https://docs.google.com/document/d/1dAlaMaHxMYtlaybiwldLk2PFJTg-DSYssYq8OoAhsCA/edit?usp=sharing");
+                "Open built exe file in VTune Amplifier and start profiler.\nFor VTune setup and guides click on <link=https://docs.google.com/document/d/1dAlaMaHxMYtlaybiwldLk2PFJTg-DSYssYq8OoAhsCA/edit?usp=sharing>this link");
         }
 
-        public class ProjectSetupPhase : TableWizardPhase
+        class ProjectSetupPhase : TableWizardPhase
         {
             public ProjectSetupPhase() : base("Unity project setup")
             {

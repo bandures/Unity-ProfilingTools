@@ -17,13 +17,16 @@ namespace Unity.NativeProfiling
     /// </summary>
     public class NativeProfilingWindow : EditorWindow
     {
-        private static readonly string kNativeProfilingToolKey = "NativeProfilingToolKey";
+        static readonly string kPluginPackageName = "com.unity.profilingtools";
+        static readonly string kNativeProfilingToolKey = "NativeProfilingToolKey";
+        static readonly string kPluginsSourceFolder = "Plugins~/";
+        static readonly string kPluginsTargetFolder = "Runtime/Plugins";
 
-        private Button m_ToolSelector;
-        private List<VisualElement> m_Phases = new List<VisualElement>();
+        Button m_ToolSelector;
+        List<VisualElement> m_Phases = new List<VisualElement>();
 
-        private Wizard m_ActiveTool = null;
-        private Wizard[] m_Tools = {
+        Wizard m_ActiveTool;
+        Wizard[] m_Tools = {
             new AndroidStudioIntegration(),
             new StreamlineAnalyzerIntegration(),
             new SnapdragonProfilerIntegration(),
@@ -34,12 +37,12 @@ namespace Unity.NativeProfiling
         [MenuItem("Window/Analysis/Profiling Tools")]
         public static void ShowWindow()
         {
-            var wnd = EditorWindow.GetWindow(typeof(NativeProfilingWindow)) as NativeProfilingWindow;
-            wnd.titleContent = new GUIContent("Native profiling wizard");
+            var wnd = GetWindow(typeof(NativeProfilingWindow)) as NativeProfilingWindow;
+            wnd.titleContent = new GUIContent("Profiling Tools");
             wnd.minSize = new Vector2(200, 300);
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
             var root = this.GetRootVisualContainer();
             root.style.flexDirection = FlexDirection.Row;
@@ -51,11 +54,12 @@ namespace Unity.NativeProfiling
             m_ToolSelector = root.Q("toolSelector").Q<Button>("selector");
             m_ToolSelector.clickable.clicked += OnToolSelectorMouseDown;
 
+            // Restore last selected tool from Editor settings
             var savedToolKey = EditorPrefs.GetString(kNativeProfilingToolKey);
-            SetActiveTool(m_Tools.TakeWhile((tool) => { return tool.Name == savedToolKey; }).FirstOrDefault());
+            SetActiveTool(m_Tools.TakeWhile(tool => { return tool.Name == savedToolKey; }).FirstOrDefault());
         }
 
-        private void OnToolSelectorMouseDown()
+        void OnToolSelectorMouseDown()
         {
             var menu = new GenericMenu();
             menu.AddItem(new GUIContent("None"), m_ActiveTool == null, () => { SetActiveTool(null); });
@@ -71,7 +75,10 @@ namespace Unity.NativeProfiling
             menu.DropDown(menuRect);
         }
 
-        private void SetActiveTool(Wizard wizard)
+        /// <summary>
+        /// Set currently active tool and updates integration plugin
+        /// </summary>
+        void SetActiveTool(Wizard wizard)
         {
             // Clear old wizard UI
             foreach (var phase in m_Phases)
@@ -80,11 +87,11 @@ namespace Unity.NativeProfiling
             }
             m_Phases.Clear();
             
-            // Clear plugins folder
-            var packagePath = FindPackage("com.unity.profilingtools");
+            // Clear plugins folder (this can fail for Windows plugins, as Editor will hold reference to loaded plugins)
+            var packagePath = FindPackage(kPluginPackageName);
             if (packagePath != null)
             {
-                var dstDir = Path.Combine(packagePath, "Runtime/Plugins");
+                var dstDir = Path.Combine(packagePath, kPluginsTargetFolder);
                 FileUtil.DeleteFileOrDirectory(dstDir);
             }
 
@@ -96,20 +103,20 @@ namespace Unity.NativeProfiling
             if (m_ActiveTool == null)
                 return;
 
-            // Copy plugins files
+            // Copy plugin files
             if (packagePath != null)
             {
                 foreach (var dirName in m_ActiveTool.RequiredFiles)
                 {
-                    var srcDir = Path.Combine(packagePath, "Plugins~/" + dirName).Replace('\\', '/');
-                    var dstDir = Path.Combine(packagePath, "Runtime/Plugins").Replace('\\', '/');
+                    var srcDir = Path.Combine(Path.Combine(packagePath, kPluginsSourceFolder), dirName).Replace('\\', '/');
+                    var dstDir = Path.Combine(packagePath, kPluginsTargetFolder).Replace('\\', '/');
                     try
                     {
                         FileUtil.CopyFileOrDirectory(srcDir, dstDir);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        Debug.LogFormat("Failed to copy plugin {0} -> {1}. Reason: ", srcDir, dstDir, e.ToString());
+                        Debug.LogFormat("Failed to copy plugin {0} -> {1}", srcDir, dstDir);
                     }
                 }
             }
@@ -135,20 +142,27 @@ namespace Unity.NativeProfiling
             }
         }
 
+        
+        /// <summary>
+        /// Fake package structure to read Unity package JSON files 
+        /// </summary>
         [Serializable]
-        public class UnityPackage
+        class UnityPackage
         {
             public string name;
         }
         
-        private string FindPackage(string packageId)
+        /// <summary>
+        /// Find package by ID in package JSON file 
+        /// </summary>
+        static string FindPackage(string packageId)
         {
             // Look for all 'package.json' files
             var packages = AssetDatabase.FindAssets("package");
             foreach (var pkg in packages)
             {
                 var path = AssetDatabase.GUIDToAssetPath(pkg);
-                if (Path.GetExtension(path) != ".json")
+                if (Path.GetExtension(path).ToLower() != ".json")
                     continue;
                 
                 // Look for identical package name id

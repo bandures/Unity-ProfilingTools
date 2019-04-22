@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Experimental.UIElements;
 using UnityEngine.Experimental.UIElements.StyleEnums;
@@ -49,12 +50,10 @@ namespace Unity.NativeProfiling
     /// </summary>
     public class TextWizardPhase : WizardPhase
     {
-        private string m_Link;
-        private string m_Description;
+        string m_Description;
 
-        public TextWizardPhase(string _name, string _description, string _link = null) : base(_name)
+        public TextWizardPhase(string _name, string _description) : base(_name)
         {
-            m_Link = _link;
             m_Description = _description;
         }
 
@@ -62,18 +61,8 @@ namespace Unity.NativeProfiling
         {
             base.Update(root);
 
-            var descrText = new Label();
-            descrText.text = m_Description;
-            root.Q("content").Add(descrText);
-
-            if (m_Link != null)
-            {
-                var linkText = new Label();
-                linkText.text = "Instructions link";
-                linkText.AddToClassList("link");
-                linkText.RegisterCallback<MouseDownEvent>((clickEvent) => { Application.OpenURL(m_Link); });
-                root.Q("content").Add(linkText);
-            }
+            var content = root.Q("content");
+            WizardUtils.SimpleRichText(content, m_Description);
         }
     }
 

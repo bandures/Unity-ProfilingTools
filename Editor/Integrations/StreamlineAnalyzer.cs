@@ -25,7 +25,10 @@ namespace Unity.NativeProfiling
         {
             yield return new AndroidValidationPhase();
             yield return new AndroidDeviceCheckPhase();
-            yield return new TextWizardPhase("", "");
+            yield return new TextWizardPhase("Instructions", 
+                "Open exported Gradle project in Android Studio and build project with debug build variant. " +
+                "For Arm Mobile Studio and Android Studio setup and guides click on " +
+                "<style=link><link=https://docs.google.com/document/d/17WJQZyT4PSSumEZvyvDlpAfC0qZER_vRqmkhrelU6k4/edit?usp=sharing> this link for online documentation");
         }
     }
 }
