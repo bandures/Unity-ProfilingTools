@@ -56,12 +56,12 @@ namespace Unity.NativeProfiling
         }
 
 
-        private T PropertyAccessor<T>(object deviceInfo, string id)
+        static T PropertyAccessor<T>(object deviceInfo, string id)
         {
             return (T)deviceInfo.GetType().GetProperty(id).GetValue(deviceInfo, null);
         }
 
-        private int GetValueFileKey(AndroidADB adb, string key, int defValue)
+        static int GetValueFileKey(AndroidADB adb, string key, int defValue)
         {
             var perfStr = adb.Run(new[] { "shell", "cat", key }, defValue.ToString());
             try

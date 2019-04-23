@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
@@ -35,7 +36,7 @@ namespace Unity.NativeProfiling
         }
 #endif
 
-        protected void PatchBuild(BuildTarget target, string path)
+        void PatchBuild(BuildTarget target, string path)
         {
             if (target != BuildTarget.Android || !EditorUserBuildSettings.exportAsGoogleAndroidProject)
                 return;
@@ -46,28 +47,63 @@ namespace Unity.NativeProfiling
 
             // Target folder
             var buildPath = Path.Combine(path, PlayerSettings.productName);
+            var buildVariant = EditorUserBuildSettings.development ? "Development" : "Release";
 
+            var buildABIs = GetActiveABIs();  
+            foreach (var i in buildABIs)
+                PatchSpecificABI(buildPath, buildVariant, i);
+        }
+
+        void PatchSpecificABI(string buildPath, string buildVariant, string buildABI)
+        {
+            // Target folder for libs
+            var targetBase = Path.Combine(buildPath, string.Format("src/main/jniLibs/{0}/", buildABI));
+            
             // Copy unstripped libil2cpp from stagin area
             var projectPath = Directory.GetCurrentDirectory();
-            var libIl2cppTarget = Path.Combine(buildPath, "src/main/jniLibs/armeabi-v7a/libil2cpp.so");
-            var libIl2cppSource = "Temp/StagingArea/symbols/armeabi-v7a/libil2cpp.so.debug";
-            CopyFile(new string[] { projectPath }, libIl2cppSource, libIl2cppTarget);
+            var libIl2cppTarget = Path.Combine(targetBase, "libil2cpp.so");
+            var libIl2cppSource = string.Format("Temp/StagingArea/symbols/{0}/libil2cpp.so.debug", buildABI);
+            CopyFiles(new[] { projectPath }, libIl2cppSource, libIl2cppTarget);
 
             // Copy unstripped libunity.so from Unity Editor folder
             // Source folder can be different, depends on platform and they way Unity was built
-            var pbeLocations = new string[]
+            var pbeLocations = new[]
             {
                 Directory.GetParent(EditorApplication.applicationPath).ToString(),
                 EditorApplication.applicationPath,
                 EditorApplication.applicationContentsPath,
             };
 
-            var libUnityTarget = Path.Combine(buildPath, "src/main/jniLibs/armeabi-v7a/libunity.so");
-            var libUnitySource = "PlaybackEngines/AndroidPlayer/Variations/il2cpp/Development/Libs/armeabi-v7a/libunity.so";
-            CopyFile(pbeLocations, libUnitySource, libUnityTarget);
+            var libUnityTarget = Path.Combine(targetBase, "libunity.so");
+            var libUnitySource = string.Format("PlaybackEngines/AndroidPlayer/Variations/il2cpp/{0}/Libs/{1}/libunity.so", buildVariant, buildABI);
+            CopyFiles(pbeLocations, libUnitySource, libUnityTarget);
         }
 
-        private bool CopyFile(string[] baseSrc, string src, string dst)
+        static IEnumerable<string> GetActiveABIs()
+        {
+#if UNITY_2017_3_OR_NEWER
+            int selectedABIs = (int)PlayerSettings.Android.targetArchitectures;
+            if ((selectedABIs & (int)AndroidArchitecture.ARM64) != 0)
+                yield return "arm64-v8a";
+            if ((selectedABIs & (int)AndroidArchitecture.ARMv7) != 0)
+                yield return "armeabi-v7a";
+            if ((selectedABIs & (int)AndroidArchitecture.X86) != 0)
+                yield return "x86";
+#else
+            var selectedABIs = PlayerSettings.Android.targetDevice;
+            if (selectedABIs == AndroidTargetDevice.ARMv7)
+                yield return "arm64-v8a";
+            else if (selectedABIs == AndroidTargetDevice.x86)
+                yield return "x86";
+            else if (selectedABIs == AndroidTargetDevice.FAT)
+            {
+                yield return "arm64-v8a";
+                yield return "x86";
+            }
+#endif
+        }
+        
+        static void CopyFiles(string[] baseSrc, string src, string dst)
         {
             bool success = false;
             foreach (var i in baseSrc)
@@ -85,11 +121,8 @@ namespace Unity.NativeProfiling
 
             if (!success)
             {
-                Debug.LogError(string.Format("Failed to copy {0} -> {1}", src, dst));
-                return false;
+                Debug.LogErrorFormat("Failed to copy {0} -> {1}", src, dst);
             }
-
-            return true;
         }
     }
 }

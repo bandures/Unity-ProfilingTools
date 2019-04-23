@@ -5,16 +5,20 @@ using UnityEngine.Experimental.LowLevel;
 
 namespace Unity.NativeProfiling
 {
-#if !DEVELOPMENT_BUILD
     /// <summary>
     /// Implementation for release mode profiler markers
     /// It exploits the fact that you can hook to any Unity subsystem using Scriptable Player Loop
     /// </summary>
     public static class SimpleTraceMarkers
     {
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void Integrate()
+        static void Integrate()
         {
+            // Make sure we aren't reporting markers twice
+            if (Debug.isDebugBuild)
+                return;
+            
             var loop = PlayerLoop.GetDefaultPlayerLoop();
 
             loop = PatchSystem(loop, 0, loop.updateFunction);
@@ -23,11 +27,11 @@ namespace Unity.NativeProfiling
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate uint PlayerLoopDelegate();
+        delegate uint PlayerLoopDelegate();
 
-        private static int m_LastLevel = 0;
+        static int m_LastLevel = 0;
 
-        private static void TraceMarker(int level, string name)
+        static void TraceMarker(int level, string name)
         {
             for (int i = level; i <= m_LastLevel; i++)
                 NativeProfiler.EndMarker();
@@ -36,7 +40,7 @@ namespace Unity.NativeProfiling
             m_LastLevel = level;
         }
 
-        private static PlayerLoopSystem PatchSystem(PlayerLoopSystem system, int level, IntPtr nullFnc)
+        static PlayerLoopSystem PatchSystem(PlayerLoopSystem system, int level, IntPtr nullFnc)
         {
             PlayerLoopDelegate systemDelegate = null;
             if (system.updateFunction.ToInt64() != 0)
@@ -59,5 +63,4 @@ namespace Unity.NativeProfiling
             return system;
         }
     }
-#endif
 }

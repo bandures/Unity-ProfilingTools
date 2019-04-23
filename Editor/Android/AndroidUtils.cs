@@ -2,7 +2,7 @@
 
 namespace Unity.NativeProfiling
 {
-    class AndroidUtils
+    static class AndroidUtils
     {
         public static Assembly GetUnityEditorAndroidAssembly()
         {

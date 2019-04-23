@@ -6,8 +6,8 @@ namespace Unity.NativeProfiling
 {
     public class AndroidDeviceCheckPhase : TableWizardPhase
     {
-        private AndroidADB m_Adb = new AndroidADB();
-        private Dictionary<string, AndroidDeviceInfo> m_Devices = new Dictionary<string, AndroidDeviceInfo>();
+        AndroidADB m_Adb = new AndroidADB();
+        Dictionary<string, AndroidDeviceInfo> m_Devices = new Dictionary<string, AndroidDeviceInfo>();
 
         public AndroidDeviceCheckPhase() : base("Phone status check")
         {
@@ -19,7 +19,7 @@ namespace Unity.NativeProfiling
 
             var content = root.Q("content");
             foreach (var dev in m_Devices)
-                GenrateDeviceTable(content, dev.Value);
+                GenerateDevicesTable(content, dev.Value);
 
             var refreshBtn = new Button(null);
             refreshBtn.text = "Refresh";
@@ -27,7 +27,7 @@ namespace Unity.NativeProfiling
             content.Add(refreshBtn);
         }
 
-        private void GenrateDeviceTable(VisualElement root, AndroidDeviceInfo dev)
+        void GenerateDevicesTable(VisualElement root, AndroidDeviceInfo dev)
         {
             var table = AddTable(root);
 
@@ -51,7 +51,7 @@ namespace Unity.NativeProfiling
             MakeRow(table, "Kernel namespace", dev.GetProperty("kernel.kptr_restrict"), dev.GetProperty("kernel.kptr_restrict") == "1" ? "Restricted" : "Visible");
         }
 
-        private void MakeRow(VisualElement root, string name, string val, string status)
+        void MakeRow(VisualElement root, string name, string val, string status)
         {
             var row = AddTableRow(root);
 
@@ -67,7 +67,7 @@ namespace Unity.NativeProfiling
             row.Add(statusLabel);
         }
 
-        private void Refresh()
+        void Refresh()
         {
             m_Devices.Clear();
 
