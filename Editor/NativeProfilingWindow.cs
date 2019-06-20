@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
-using UnityEngine.Experimental.UIElements;
-using UnityEditor.Experimental.UIElements;
-using UnityEngine.Experimental.UIElements.StyleEnums;
-using UnityEditor.PackageManager;
 using System.Linq;
+
+#if UNITY_2019_1_OR_NEWER
+using UnityEngine.UIElements;
+#else
+using UnityEngine.Experimental.UIElements;
+#endif
+
 
 
 namespace Unity.NativeProfiling
@@ -44,12 +47,19 @@ namespace Unity.NativeProfiling
 
         void OnEnable()
         {
+#if UNITY_2019_1_OR_NEWER
+            var root = this.rootVisualElement;
+            root.style.flexDirection = FlexDirection.Row;
+            root.styleSheets.Add(Resources.Load<StyleSheet>("nativeprofiling-style"));
+            var template = Resources.Load<VisualTreeAsset>("nativeprofiling-template");
+            template.CloneTree(root);
+#else
             var root = this.GetRootVisualContainer();
             root.style.flexDirection = FlexDirection.Row;
-
             root.AddStyleSheetPath("nativeprofiling-style");
             var template = Resources.Load<VisualTreeAsset>("nativeprofiling-template");
             template.CloneTree(root, null);
+#endif
 
             m_ToolSelector = root.Q("toolSelector").Q<Button>("selector");
             m_ToolSelector.clickable.clicked += OnToolSelectorMouseDown;
@@ -122,7 +132,11 @@ namespace Unity.NativeProfiling
             }
             
             // Generate UI for wizard phases
+#if UNITY_2019_1_OR_NEWER
+            var root = this.rootVisualElement.Q("phasesView");
+#else
             var root = this.GetRootVisualContainer().Q("phasesView");
+#endif
             if (m_ActiveTool.GetPhases() != null)
             {
                 int counter = 2;

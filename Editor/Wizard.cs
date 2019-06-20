@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using UnityEngine;
+
+#if UNITY_2019_1_OR_NEWER
+using UnityEngine.UIElements;
+#else
 using UnityEngine.Experimental.UIElements;
-using UnityEngine.Experimental.UIElements.StyleEnums;
+#endif
 
 namespace Unity.NativeProfiling
 {
@@ -38,7 +41,11 @@ namespace Unity.NativeProfiling
         public virtual void Update(VisualElement root)
         {
             root.Clear();
+#if UNITY_2019_1_OR_NEWER            
+            m_PhaseTemplate.CloneTree(root);
+#else
             m_PhaseTemplate.CloneTree(root, null);
+#endif
 
             root.Q<Label>("header").text = m_Name;
             root.Q<Label>("phase").text = m_PhaseId.ToString();
@@ -113,11 +120,18 @@ namespace Unity.NativeProfiling
             var statusFixButton = new Button(null);
 
             statusLabel.name = "status";
-            statusLabel.style.positionType = PositionType.Absolute;
             statusFixButton.text = "Fix";
             statusFixButton.name = "statusFix";
-            statusFixButton.style.positionType = PositionType.Absolute;
             statusFixButton.AddToClassList("compactButton");
+            
+#if UNITY_2019_1_OR_NEWER            
+            statusLabel.style.position = Position.Absolute;
+            statusFixButton.style.position = Position.Absolute;
+#else
+            statusLabel.style.positionType = PositionType.Absolute;
+            statusFixButton.style.positionType = PositionType.Absolute;
+#endif
+            
             statusFixButton.clickable.clicked += () => {
                 fix();
                 UpdateStatus(check, statusGroup);
