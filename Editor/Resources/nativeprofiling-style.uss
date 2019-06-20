@@ -125,7 +125,13 @@
 
 #wizard #phases {
     flex: 1;
-    flex-grow: 1;    
+    flex-grow: 1;
+}
+
+#wizard #ContentView {
+    flex: 1;
+    flex-grow: 1;
+    position-type: relative;
 }
 
 #wizard #phases-view {

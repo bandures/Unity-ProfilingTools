@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_2018_1_OR_NEWER
+using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Experimental.LowLevel;
@@ -64,3 +65,4 @@ namespace Unity.NativeProfiling
         }
     }
 }
+#endif
