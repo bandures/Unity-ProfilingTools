@@ -192,6 +192,10 @@
 }
 
 
+.rich-text-none {
+    word-wrap: True;
+}
+
 .rich-text-default, .rich-text-link {
     margin-top: 0;
     margin-left: 0;

@@ -23,7 +23,7 @@ namespace Unity.NativeProfiling
             root.style.flexWrap = Wrap.Wrap;
             root.style.flexDirection = FlexDirection.Row;
             
-#if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_2_OR_NEWER
             string styleId = "rich-text-default"; 
             string linkUrl = ""; 
             var sections = Regex.Split(text, @"(?=<)");
@@ -65,7 +65,8 @@ namespace Unity.NativeProfiling
                 }
             }
 #else
-            MakeLabelText(text, "rich-text-default", "");
+            var textLabel = MakeLabelText(text, "rich-text-none", "");
+            root.Add(textLabel);
 #endif
         }
 
