@@ -2,7 +2,11 @@
 using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
+#if UNITY_2019_3_OR_NEWER
+using UnityEngine.LowLevel;
+#else
 using UnityEngine.Experimental.LowLevel;
+#endif
 
 namespace Unity.NativeProfiling
 {
